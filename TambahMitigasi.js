@@ -1,13 +1,21 @@
 import { faCamera } from '@fortawesome/free-solid-svg-icons';
 import React, { useState } from 'react';
-import { TouchableOpacity, View, StyleSheet, Alert, ScrollView, PermissionsAndroid, Image } from 'react-native';
+import {
+    TouchableOpacity,
+    View,
+    StyleSheet,
+    Alert,
+    ScrollView,
+    PermissionsAndroid,
+    Image,
+} from 'react-native';
 import { TextInput, Button, Text } from 'react-native-paper';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import Geolocation from '@react-native-community/geolocation';
-import { launchCamera } from 'react-native-image-picker';  // Import the camera picker
-import RNFS from 'react-native-fs';  // Import react-native-fs for Base64 conversion
+import { launchCamera } from 'react-native-image-picker';
+import RNFS from 'react-native-fs';
 
-const App = () => {
+const TambahMitigasi = () => {
     const [nama, setNama] = useState('');
     const [kontak, setKontak] = useState('');
     const [deskripsi, setDeskripsi] = useState('');
@@ -15,10 +23,9 @@ const App = () => {
     const [lintang, setLintang] = useState('');
     const [bujur, setBujur] = useState('');
     const [currentLocation, setCurrentLocation] = useState(null);
-    const [imageUri, setImageUri] = useState(null);  // State to hold image URI
-    const [imageBase64, setImageBase64] = useState(null);  // State to hold image in Base64
+    const [imageUri, setImageUri] = useState(null);
+    const [imageBase64, setImageBase64] = useState(null);
 
-    // Request location permission
     const PermissionLocation = async () => {
         try {
             const granted = await PermissionsAndroid.request(
@@ -26,23 +33,18 @@ const App = () => {
                 {
                     title: 'Location Permission',
                     message: 'App needs access to your location',
-                    buttonNeutral: 'Ask Me Later',
-                    buttonNegative: 'Cancel',
-                    buttonPositive: 'OK',
-                },
+                }
             );
             if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-                console.log('You can use the location');
                 getCurrentLocation();
             } else {
-                console.log('Location permission denied');
+                Alert.alert('Permission Denied', 'Location permission is required.');
             }
         } catch (err) {
             console.warn(err);
         }
     };
 
-    // Request camera permission and open camera
     const PermissionCameraAndOpen = async () => {
         try {
             const granted = await PermissionsAndroid.request(
@@ -50,17 +52,12 @@ const App = () => {
                 {
                     title: 'Camera Permission',
                     message: 'App needs access to your camera',
-                    buttonNeutral: 'Ask Me Later',
-                    buttonNegative: 'Cancel',
-                    buttonPositive: 'OK',
-                },
+                }
             );
             if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-                console.log('You can use the camera');
                 openCamera();
             } else {
-                console.log('Camera permission denied');
-                Alert.alert('Permission Denied', 'Please allow camera access to take a photo.');
+                Alert.alert('Permission Denied', 'Camera access is required.');
             }
         } catch (err) {
             console.warn(err);
@@ -72,11 +69,10 @@ const App = () => {
             position => {
                 const { latitude, longitude } = position.coords;
                 setCurrentLocation({ latitude, longitude });
-                setLintang(latitude.toString()); // Automatically update latitude input
-                setBujur(longitude.toString()); // Automatically update longitude input
-                console.log(latitude, longitude);
+                setLintang(latitude.toString());
+                setBujur(longitude.toString());
             },
-            error => alert('Error', error.message),
+            error => Alert.alert('Error', error.message),
             { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
         );
     };
@@ -89,7 +85,7 @@ const App = () => {
 
         const data = { nama, kontak, deskripsi, alamat, lintang, bujur, photo: imageBase64 };
         const scriptURL =
-            'https://script.google.com/macros/s/AKfycbwBn4dR1mKxcABuhCzwh9zUw1ibvTc11iFY53v95HrZFaE-_dYkKLR6vIC8-fARgz6ItQ/exec';
+            'https://script.google.com/macros/s/AKfycbx-EETt3Nc24jpJX-tzoNVoPZ37aF-2kGhnLYS7VN0-zRCTDhyzQHZig7Eu_X7EhB9-XQ/exec';
 
         try {
             const response = await fetch(scriptURL, {
@@ -101,59 +97,59 @@ const App = () => {
             });
 
             const result = await response.json();
+            console.log('Response:', result);
 
             if (result.status === 'success') {
                 Alert.alert('Success', 'Data has been saved!');
-                // Reset the form fields after successful submission
-                setNama('');
-                setKontak('');
-                setDeskripsi('');
-                setAlamat('');
-                setLintang('');
-                setBujur('');
-                setCurrentLocation(null); // Reset currentLocation state to show location button again
-                setImageUri(null);  // Reset imageUri after submission
-                setImageBase64(null);  // Reset imageBase64 after submission
+                resetForm();
             } else {
-                Alert.alert('Error', result.message);
+                Alert.alert('Error', result.message || 'Failed to save data.');
             }
         } catch (error) {
-            Alert.alert('Error', 'Failed to save data. Please try again later.');
+            console.error('Error:', error);
+            Alert.alert('Error', 'Failed to save data. Please try again.');
         }
     };
 
-    // Function to launch the camera
+    const resetForm = () => {
+        setNama('');
+        setKontak('');
+        setDeskripsi('');
+        setAlamat('');
+        setLintang('');
+        setBujur('');
+        setCurrentLocation(null);
+        setImageUri(null);
+        setImageBase64(null);
+    };
+
     const openCamera = () => {
         launchCamera(
             {
                 mediaType: 'photo',
                 cameraType: 'back',
                 quality: 1,
-                saveToPhotos: true,  // Optionally save to photos
+                saveToPhotos: true,
             },
-            async (response) => {
-                console.log(response);  // Debug response from the camera
+            async response => {
                 if (response.didCancel) {
                     console.log('User cancelled camera picker');
                 } else if (response.errorCode) {
-                    console.log('Camera picker error: ', response.errorMessage);
                     Alert.alert('Error', 'Camera failed to open. Please check your permissions.');
                 } else {
-                    const uri = response.assets[0].uri;  // Get the image URI
-                    setImageUri(uri);  // Set the image URI to state
-                    convertToBase64(uri);  // Convert image to Base64
+                    const uri = response.assets[0].uri;
+                    setImageUri(uri);
+                    convertToBase64(uri);
                 }
             }
         );
     };
 
-    // Function to convert image to Base64
-    const convertToBase64 = async (uri) => {
+    const convertToBase64 = async uri => {
         try {
             const base64Image = await RNFS.readFile(uri, 'base64');
-            setImageBase64(`data:image/jpeg;base64,${base64Image}`);  // Store Base64 string with data URI prefix
+            setImageBase64(`data:image/jpeg;base64,${base64Image}`);
         } catch (error) {
-            console.error('Error converting image to Base64', error);
             Alert.alert('Error', 'Failed to convert image to Base64.');
         }
     };
@@ -334,4 +330,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default App;
+export default TambahMitigasi;
