@@ -9,9 +9,9 @@ const HomeScreen = () => {
     const [currentLink, setCurrentLink] = useState('');
 
     const links = [
-        { url: 'https://script.google.com/macros/s/AKfycby7RRdBmCKR5O88H-Fd2EiKYhDJXI9c4LzGrI4_HRgLEKAINiNf4CwXe5pW877H7hyS/exec', icon: faVolcano, text: 'Kejadian Bencana' },
-        { url: 'https://sdin.slemankab.go.id/', icon: faChalkboardUser, text: 'Kegiatan Mitigasi Bencana' },
-        { url: 'https://bnpb.go.id/', icon: faCity, text: 'Persil Bangunan' },
+        { url: 'https://script.google.com/macros/s/AKfycbx6HsRzqediHe6bfkS4zuadobRXTBQ0qgHkOeSkNzMAsZ7IoTZoemLuWEVUTNGOFZ2m/exec', icon: faVolcano, text: 'Kejadian Bencana' },
+        { url: 'https://script.google.com/macros/s/AKfycbxbrFDyO4YRxqVcu5mG-vCO_KcQz32xyBD1Q5LCwRNWPlbP7grKT_1pzHhEMyZ4cdjB/exec', icon: faChalkboardUser, text: 'Kegiatan Mitigasi Bencana' },
+        { url: 'https://script.google.com/macros/s/AKfycbzLGBke1vJht-2ld8PzUIPR2ApemvXJsiy5obWVO3F9GowE_qpG3wgbUKS8mU91oR0MuA/exec', icon: faCity, text: 'Persil Bangunan' },
     ];
 
     const openModal = (link) => {
@@ -21,7 +21,6 @@ const HomeScreen = () => {
 
     return (
         <View style={styles.container}>
-            {/* Additional Section with Buttons */}
             <View style={styles.additionalSection}>
                 {links.map((link, index) => (
                     <View key={index} style={styles.buttonContainer}>
@@ -36,7 +35,6 @@ const HomeScreen = () => {
                 ))}
             </View>
 
-            {/* WebView Modal */}
             <Modal visible={modalVisible} animationType="slide" onRequestClose={() => setModalVisible(false)}>
                 <View style={styles.webViewContainer}>
                     <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>

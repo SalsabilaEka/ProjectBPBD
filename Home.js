@@ -1,23 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Modal, SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
+import MapView, { Marker } from 'react-native-maps';
 
 const HomeScreen = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [currentLink, setCurrentLink] = useState('');
+    const [dataCount, setDataCount] = useState(0);
+
+    useEffect(() => {
+        const url = 'https://script.google.com/macros/s/AKfycbwGU3B6uUUbjtUshiWdqElE6ff0w6Wz_gId3-T9xXuoYhYUcm0YFpMOczOHwiUYslfs/exec';
+
+        const fetchData = async () => {
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                console.log('API Response:', data); // Log response data
+                setDataCount(data.dataCount); // Mengakses dataCount yang benar
+                console.log('Data Count:', dataCount); // Periksa nilai state setelah set
+            } catch (error) {
+                console.error('Fetch Error:', error);
+            }
+        };
+        fetchData();
+    }, []);
 
     const links = [
         'https://www.google.com/maps/d/u/0/viewer?mid=1xkujiOfp8eEdZ9NOm0geFyZ-T4H9TEaH&ll=-7.654257359802979%2C110.37457584863067&z=11',
+        'https://bpbd.slemankab.go.id/',
         'https://sdin.slemankab.go.id/',
         'https://bnpb.go.id/',
-        'https://basarnas.go.id/',
     ];
 
     const buttonLabels = [
         'Geoservice Kebencanaan',
+        'BPBD Kabupaten Sleman',
         'Sleman Disaster Information Network',
         'Badan Nasional Penanggulangan Bencana',
-        'Badan Nasional Pencarian dan Pertolongan',
     ];
 
     const openModal = (link) => {
@@ -33,27 +52,20 @@ const HomeScreen = () => {
             >
                 <ScrollView contentContainerStyle={styles.scrollViewContent}>
                     {/* Header Section */}
-                    <Text style={styles.headerText}>
-                        Aplikasi ini membantu mengumpulkan dan menganalisis data mitigasi bencana untuk mendukung keputusan berbasis data
-                    </Text>
+                    <View style={styles.headerContainer}>
+                    <Text style={styles.headerTextJudul}>
+                    SIGAP Bencana (Sistem Informasi Geospasial untuk Analisis dan Penanggulangan Bencana)
+                        </Text>
+                        <Text style={styles.headerText}>
+                            Aplikasi ini membantu mengumpulkan dan menganalisis data mitigasi bencana untuk mendukung keputusan berbasis data
+                        </Text>
+                    </View>
 
                     {/* Data Summary Section */}
                     <View style={styles.summaryContainer}>
-                        <View style={styles.leftCard}>
-                            <View style={[styles.card, styles.cardTotal]}>
-                                <Text style={styles.cardNumberData}>28</Text>
-                                <Text style={styles.cardLabelData}>Jumlah Data</Text>
-                            </View>
-                        </View>
-                        <View style={styles.rightCards}>
-                            <View style={[styles.card, styles.cardRed]}>
-                                <Text style={styles.cardNumber}>10</Text>
-                                <Text style={styles.cardLabel}>  Jumlah Kejadian Bencana</Text>
-                            </View>
-                            <View style={[styles.card, styles.cardBlue]}>
-                                <Text style={styles.cardNumber}>18</Text>
-                                <Text style={styles.cardLabel}>  Jumlah Tindakan yang dilakukan</Text>
-                            </View>
+                        <View style={styles.card}>
+                            <Text style={styles.cardNumberData}>{dataCount}</Text>
+                            <Text style={styles.cardLabelData}>Jumlah Data</Text>
                         </View>
                     </View>
 
@@ -61,11 +73,11 @@ const HomeScreen = () => {
                     <View>
                         <Text style={styles.galleryTitle}>Galeri Kegiatan Penanggulangan Bencana</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.galleryScroll}>
-                            <Image source={{ uri: 'https://cdn.langit7.id/foto/850/langit7/berita/2022/12/08/1/26847/menengok-proses-pembuatan-keripik-belut-cemilan-khas-yogyakarta-efn.jpg' }} style={styles.galleryImage} />
-                            <Image source={{ uri: 'https://images.bisnis.com/posts/2019/12/13/1181057/um5.jpg' }} style={styles.galleryImage} />
-                            <Image source={{ uri: 'https://1.bp.blogspot.com/-ncNYABac_is/XZqrzxfunCI/AAAAAAAAHMM/9QZRk-3Th_wfBjnS4ie58bubBU0KXH3BACLcBGAsYHQ/s640/batik.jpg' }} style={styles.galleryImage} />
-                            <Image source={{ uri: 'https://cdn.idntimes.com/content-images/community/2020/08/106373316-272833037121373-536482253941973684-n-c873a686e7d36491544e3966d0641d80.jpg' }} style={styles.galleryImage} />
-                            <Image source={{ uri: 'https://assets.pikiran-rakyat.com/crop/0x0:0x0/x/photo/2024/01/27/811873858.png' }} style={styles.galleryImage} />
+                            <Image source={require('./asset/gambar1.jpg')} style={styles.galleryImage} />
+                            <Image source={require('./asset/gambar2.jpg')} style={styles.galleryImage} />
+                            <Image source={require('./asset/gambar3.jpg')} style={styles.galleryImage} />
+                            <Image source={require('./asset/gambar4.png')} style={styles.galleryImage} />
+                            <Image source={require('./asset/gambar5.jpg')} style={styles.galleryImage} />
                         </ScrollView>
                     </View>
 
@@ -74,17 +86,12 @@ const HomeScreen = () => {
                     <View style={styles.contactContainer}>
                         <Text style={styles.contactText}>Badan Penanggulangan Bencana Daerah</Text>
                         <Text style={styles.contactText}>Kabupaten Sleman</Text>
-                        <Text style={styles.contactText}>Telepon: (0274) 865850</Text>
-                        <Text style={styles.contactText}>Email: bpbd.slemankab.go.id</Text>
+                        <Text style={styles.contactText}>Telepon: (0274) 86850</Text>
+                        <Text style={styles.contactText}>Email: bpbd@slemankab.go.id</Text>
+                        <Text style={styles.contactText}>Alamat: Jalan Candi Boko, Beran, Tridadi, Sleman 55511</Text>
                     </View>
 
-                    {/* Map Section */}
-                    <WebView
-                        source={{
-                            uri: 'https://www.google.com/maps?q=Badan+Penanggulangan+Bencana+Daerah+Sleman&output=embed',
-                        }}
-                        style={styles.map}
-                    />
+
 
                     {/* Additional Section with Buttons */}
                     <View style={styles.additionalSection}>
@@ -119,6 +126,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     scrollViewContent: {
         padding: 20,
@@ -128,48 +137,29 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginBottom: 16,
     },
+    headerTextJudul: {
+        fontSize: 18,
+        textAlign: 'center',
+        marginBottom: 16,
+        fontWeight: 'bold'
+    },
     summaryContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         marginBottom: 16,
     },
     card: {
-        flex: 1,
         padding: 16,
         borderRadius: 8,
-        alignItems: 'center',
-        marginHorizontal: 4,
-    },
-    cardTotal: {
         backgroundColor: '#ffeed4',
-    },
-    cardRed: {
-        backgroundColor: '#c1111e',
-        marginBottom: 8,
-        flexDirection: 'row',
-    },
-    cardBlue: {
-        backgroundColor: '#659aba',
-        flexDirection: 'row',
+        alignItems: 'center',
     },
     cardNumberData: {
         fontSize: 48,
         fontWeight: 'bold',
     },
-    cardNumber: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#fff',
-        textAlign: 'center',
-    },
     cardLabelData: {
         fontSize: 14,
-        textAlign: 'center',
-    },
-    cardLabel: {
-        fontSize: 14,
-        textAlign: 'center',
-        color: '#fff',
     },
     sectionTitle: {
         fontSize: 15,
@@ -226,6 +216,12 @@ const styles = StyleSheet.create({
         marginBottom: 5,
         marginTop: 10,
     },
+    map: {
+        width: '100%',
+        height: 250,
+        marginVertical: 10,
+    },
+    
 });
 
 export default HomeScreen;

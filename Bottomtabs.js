@@ -6,6 +6,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faHouse, faFileCirclePlus, faFolderOpen, faMapLocationDot } from '@fortawesome/free-solid-svg-icons';
 import Beranda from './Home';
 import TambahData from './Add';
+import Peta from './Map';
+import Data from './Data';
 
 function HomeScreen() {
     return (
@@ -15,9 +17,7 @@ function HomeScreen() {
 
 function MapScreen() {
     return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text>Settings!</Text>
-        </View>
+        <Peta />
     );
 }
 
@@ -29,9 +29,7 @@ function AddScreen() {
 
 function DataScreen() {
     return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text>Settings!</Text>
-        </View>
+        <Data />
     );
 }
 
