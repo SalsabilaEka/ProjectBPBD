@@ -9,9 +9,9 @@ const HomeScreen = () => {
     const [currentLink, setCurrentLink] = useState('');
 
     const links = [
-        { url: 'https://script.google.com/macros/s/AKfycbx6HsRzqediHe6bfkS4zuadobRXTBQ0qgHkOeSkNzMAsZ7IoTZoemLuWEVUTNGOFZ2m/exec', icon: faVolcano, text: 'Kejadian Bencana' },
-        { url: 'https://script.google.com/macros/s/AKfycbxbrFDyO4YRxqVcu5mG-vCO_KcQz32xyBD1Q5LCwRNWPlbP7grKT_1pzHhEMyZ4cdjB/exec', icon: faChalkboardUser, text: 'Kegiatan Mitigasi Bencana' },
-        { url: 'https://script.google.com/macros/s/AKfycbzLGBke1vJht-2ld8PzUIPR2ApemvXJsiy5obWVO3F9GowE_qpG3wgbUKS8mU91oR0MuA/exec', icon: faCity, text: 'Persil Bangunan' },
+        { url: 'https://script.google.com/macros/s/AKfycbyWorgMJCYK_sI8zx9XQ09F0nd99xPRsCUfXAXqxkk2lk_lvcRtaRt1uOzVgchlqxZEfw/exec', icon: faVolcano, text: 'Kejadian Bencana' },
+        { url: 'https://script.google.com/macros/s/AKfycbwCfjnjD9yUxTJIYPT67kDazNlBVIo54sGFszQnevgYn2cDoyut6cKF5gnU0p_G7We0/exec', icon: faChalkboardUser, text: 'Kegiatan Mitigasi Bencana' },
+        { url: 'https://script.google.com/macros/s/AKfycby80mFZjD697uBui7e_vMq3FrbExZB25xVNk3Rxfiun29-n3Z_IFVQSzEG7U_7cz75tSw/exec', icon: faCity, text: 'Persil Bangunan' },
     ];
 
     const openModal = (link) => {
@@ -51,8 +51,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-        justifyContent: 'center',  // Centers content vertically
-        alignItems: 'center',      // Centers content horizontally
+        justifyContent: 'center', 
+        alignItems: 'center',      
     },
     buttonContainer: {
         alignItems: 'center',
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
         color: '#023048',
         fontSize: 16,
         fontWeight: '700',
-        marginTop: 5, // Adds space between icon and text
+        marginTop: 5, 
     },
     webViewContainer: {
         flex: 1,
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     },
     additionalSection: {
         justifyContent: 'center',
-        alignItems: 'center',  // Centers buttons inside this section
+        alignItems: 'center',  
     },
 });
 

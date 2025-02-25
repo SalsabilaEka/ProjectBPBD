@@ -1,44 +1,64 @@
 import React, { useState, useEffect } from 'react';
-import { Image, View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, TextInput, Modal, Linking } from 'react-native';
+import { Image, View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, TextInput, Modal, Linking, RefreshControl } from 'react-native';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faImage } from '@fortawesome/free-solid-svg-icons';  // Ikon gambar kosong
+import { faImage, faSort } from '@fortawesome/free-solid-svg-icons';
 
 const App = () => {
     const [data, setData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedCategory, setSelectedCategory] = useState(''); // Kategori yang dipilih
-    const [searchText, setSearchText] = useState(''); // Untuk input pencarian
-    const [modalVisible, setModalVisible] = useState(false);  // Modal visibility state
-    const [selectedItem, setSelectedItem] = useState(null); // Store the selected item for modal
+    const [refreshing, setRefreshing] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [searchText, setSearchText] = useState('');
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [sortOrder, setSortOrder] = useState('desc');
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // URL dari ketiga Apps Script
-                const urls = [
-                    'https://script.google.com/macros/s/AKfycbxovA8Uda4iBiJ_t7RscCNBYGmO6nAAV60ejSdwJXy29IvMA-BJLQ1JrlSaHObGjoMo/exec', // Ganti dengan URL pertama
-                    'https://script.google.com/macros/s/AKfycbyTvhKS5-JMt1C8iBQfH_97FRmKNflcjpSh-LhFQ8jfumBkZNtIYnu9gpHp48o74zmU4A/exec',
-                ];
-
-                // Fetch semua data menggunakan Promise.all
-                const responses = await Promise.all(urls.map(url => axios.get(url)));
-                const mergedData = responses.flatMap(response => response.data); // Menggabungkan data dari semua API
-
-                setData(mergedData);
-                setFilteredData(mergedData); // Set filteredData dengan semua data awal
-                setLoading(false);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                setLoading(false);
-            }
-        };
-
         fetchData();
     }, []);
 
-    // Fungsi untuk memfilter data berdasarkan kategori dan pencarian
+    const fetchData = async () => {
+        try {
+            const urls = [
+                'https://script.google.com/macros/s/AKfycbwTn0Au1MdEmhW23zUBIwcpsQIyrAJT-rbsQ51FB-uqywI6_qUpeObAOURql1kkEbd0/exec',
+                'https://script.google.com/macros/s/AKfycbyTvhKS5-JMt1C8iBQfH_97FRmKNflcjpSh-LhFQ8jfumBkZNtIYnu9gpHp48o74zmU4A/exec',
+            ];
+
+            const responses = await Promise.all(urls.map(url => axios.get(url)));
+            const mergedData = responses.flatMap(response => response.data);
+
+            const sortedData = sortData(mergedData, 'desc');
+
+            setData(sortedData);
+            setFilteredData(sortedData);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        await fetchData();
+        setRefreshing(false);
+    };
+
+    const sortData = (dataArray, order) => {
+        return [...dataArray].sort((a, b) => {
+            const dateA = new Date(a.waktu);
+            const dateB = new Date(b.waktu);
+            return order === 'desc' ? dateB - dateA : dateA - dateB;
+        });
+    };
+
+    const toggleSort = () => {
+        const newOrder = sortOrder === 'desc' ? 'asc' : 'desc';
+        setSortOrder(newOrder);
+        setFilteredData(sortData(filteredData, newOrder));
+    };
+
     const filterData = (category, search) => {
         const filteredByCategory = category === '' ? data : data.filter(item => item.kategori === category);
         const filteredBySearch = filteredByCategory.filter(item => {
@@ -50,35 +70,33 @@ const App = () => {
         setFilteredData(filteredBySearch);
     };
 
-    // Fungsi untuk memfilter berdasarkan kategori
     const filterByCategory = (category) => {
         setSelectedCategory(category);
-        filterData(category, searchText); // Memanggil filterData dengan kategori dan teks pencarian
+        filterData(category, searchText);
     };
 
-    // Fungsi untuk mengonversi waktu
     const formatDate = (isoDate) => {
         const date = new Date(isoDate);
         const options = { day: 'numeric', month: 'long', year: 'numeric' };
-        return date.toLocaleDateString('id-ID', options); // Menggunakan format lokal Indonesia
+        return date.toLocaleDateString('id-ID', options);
     };
 
-    // Fungsi untuk merangkai alamat
     const formatAddress = ({ dusun, rtrw, kalurahan, kapanewon }) => {
         return `Dusun ${dusun}, RT/RW ${rtrw}, Kalurahan ${kalurahan}, Kapanewon ${kapanewon}`;
     };
 
-
-    // Fungsi untuk mengubah link foto 
     const getDirectLink = (driveUrl) => {
+        if (!driveUrl || typeof driveUrl !== 'string') {
+            console.error("Invalid driveUrl:", driveUrl);
+            return '';
+        }
+
         const match = driveUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
         return match ? `https://drive.google.com/uc?id=${match[1]}` : driveUrl;
     };
 
-
-    // Fungsi untuk merender data dari drive
     const renderItem = ({ item }) => {
-        const imageSource = item.foto ? { uri: getDirectLink(item.foto) } : null;
+        const imageSource = item.foto && typeof item.foto === 'string' ? { uri: getDirectLink(item.foto) } : null;
 
         return (
             <TouchableOpacity style={styles.itemContainer} onPress={() => setSelectedItem(item)}>
@@ -96,6 +114,22 @@ const App = () => {
                         <Text style={styles.itemSubtitle}>{formatDate(item.waktu)}</Text>
                         <Text style={styles.itemSubtitle}>{formatAddress(item)}</Text>
                         <Text style={styles.itemCategory}>Kategori: {item.kategori}</Text>
+
+                        {item.kategori === 'Kejadian Bencana' && item.status && (
+                            <Text
+                                style={[
+                                    styles.itemStatus,
+                                    {
+                                        color: item.status.trim().toLowerCase() === 'sudah ditangani' ? '#52a447' :
+                                            item.status.trim().toLowerCase() === 'belum ditangani' ? '#c1111e' :
+                                                item.status.trim().toLowerCase() === 'sedang ditangani' ? '#e6b400' :
+                                                    'black'
+                                    }
+                                ]}
+                            >
+                                Status: {item.status}
+                            </Text>
+                        )}
                     </View>
                 </View>
             </TouchableOpacity>
@@ -110,9 +144,7 @@ const App = () => {
             console.error('Koordinat tidak ditemukan');
         }
     };
-    
 
-    // Loading state
     if (loading) {
         return (
             <View style={styles.loaderContainer}>
@@ -124,34 +156,38 @@ const App = () => {
 
     return (
         <View style={styles.container}>
-            {/* Container untuk kolom pencarian dan tombol cari */}
             <View style={styles.searchContainer}>
-                {/* Input Pencarian */}
                 <TextInput
                     style={styles.searchInput}
                     placeholder="Cari..."
+                    placeholderTextColor="black"
                     value={searchText}
                     onChangeText={setSearchText}
                 />
 
-                {/* Tombol Cari */}
                 <TouchableOpacity
                     style={styles.searchButton}
-                    onPress={() => filterData(selectedCategory, searchText)} // Memanggil fungsi filterData
+                    onPress={() => filterData(selectedCategory, searchText)}
                 >
                     <Text style={styles.searchButtonText}>Cari</Text>
                 </TouchableOpacity>
             </View>
 
-            {/* Tombol Semua */}
-            <TouchableOpacity
-                style={[styles.filterTopButton, selectedCategory === '' && styles.filterButtonActive]}
-                onPress={() => filterByCategory('')}
-            >
-                <Text style={styles.filterButtonText}>Semua</Text>
-            </TouchableOpacity>
+            <View style={styles.filterButtonGroup1}>
+                <TouchableOpacity
+                    style={[styles.filterTopButton, selectedCategory === '' && styles.filterButtonActive]}
+                    onPress={() => filterByCategory('')}
+                >
+                    <Text style={styles.filterButtonText}>Semua</Text>
+                </TouchableOpacity>
 
-            {/* Grup Tombol Kategori */}
+                <TouchableOpacity style={styles.sortButton} onPress={toggleSort}>
+                    <View style={styles.iconSort}>
+                        <FontAwesomeIcon icon={faSort} size={20} color="#fff" />
+                    </View>
+                </TouchableOpacity>
+            </View>
+
             <View style={styles.filterButtonGroup}>
                 <TouchableOpacity
                     style={[styles.filterButton, selectedCategory === 'Kejadian Bencana' && styles.filterButtonActive]}
@@ -167,13 +203,15 @@ const App = () => {
                 </TouchableOpacity>
             </View>
 
-            {/* Filtered Data List */}
             <FlatList
                 data={filteredData}
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={renderItem}
                 contentContainerStyle={styles.listContainer}
                 showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+                }
             />
 
             {selectedItem && (
@@ -188,7 +226,6 @@ const App = () => {
                             <Text style={styles.modalTitle}>{selectedItem.nama}</Text>
                             <Text style={styles.modalText}>{selectedItem.deskripsi}</Text>
 
-                            {/* Tambahkan tombol untuk navigasi ke Google Maps */}
                             <TouchableOpacity
                                 style={styles.googleMapsButton}
                                 onPress={() => openGoogleMaps(selectedItem.lintang, selectedItem.bujur)}
@@ -215,17 +252,17 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
     },
     cardContent: {
-        flexDirection: 'row', // Mengatur tata letak horizontal untuk gambar dan teks
+        flexDirection: 'row',
         alignItems: 'center',
     },
     itemImage: {
-        width: 80, // Lebar gambar
-        height: 80, // Tinggi gambar
-        borderRadius: 10, // Membuat sudut gambar melengkung
-        marginRight: 15, // Jarak antara gambar dan teks
+        width: 80,
+        height: 80,
+        borderRadius: 10,
+        marginRight: 15,
     },
     textContent: {
-        flex: 1, // Agar teks memenuhi ruang yang tersisa
+        flex: 1,
     },
     listContainer: {
         padding: 10,
@@ -235,7 +272,7 @@ const styles = StyleSheet.create({
         marginRight: 10,
         marginTop: 15,
         flexDirection: 'row',
-        alignItems: 'center', // Vertikal center alignment
+        alignItems: 'center',
         marginBottom: 10,
     },
     searchInput: {
@@ -244,7 +281,17 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         paddingHorizontal: 12,
         borderRadius: 5,
-        flex: 1, // Input mengisi ruang yang tersedia
+        flex: 1,
+    },
+    sortButton: {
+        backgroundColor: '#659aba',
+        paddingVertical: 2,
+        paddingHorizontal: 10,
+        borderRadius: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 10,
     },
     searchButton: {
         backgroundColor: '#B71C1C',
@@ -252,7 +299,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         borderRadius: 5,
         alignItems: 'center',
-        marginLeft: 10, // Memberi jarak antara input dan tombol
+        marginLeft: 10,
     },
     searchButtonText: {
         color: '#fff',
@@ -263,11 +310,15 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         paddingHorizontal: 20,
         borderRadius: 10,
-        width: '95%', // Menggunakan 90% agar tidak terlalu mepet dengan sisi kiri dan kanan
-        alignItems: 'center',
-        alignSelf: 'center', // Membuat tombol berada di tengah
-        marginHorizontal: '4%', // Memberikan jarak di sisi kiri dan kanan
         marginBottom: 10,
+        width: '80%',
+        alignItems: 'center',
+    },
+    filterButtonGroup1: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-evenly',
+        width: '100%',
     },
     filterButtonGroup: {
         flexDirection: 'row',
@@ -347,26 +398,43 @@ const styles = StyleSheet.create({
     googleMapsButtonText: {
         color: '#fff',
         fontWeight: 'bold',
+        textAlign: 'center'
     },
     modalContainer: {
-        flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)'
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)'
     },
     modalContent: {
-        backgroundColor: '#fff', padding: 20, borderRadius: 10, width: '80%'
+        backgroundColor: '#fff',
+        padding: 20,
+        borderRadius: 10,
+        width: '80%'
     },
     modalTitle: {
-        fontSize: 18, fontWeight: 'bold', marginBottom: 10
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
+        textAlign: 'center'
     },
     modalText: {
-        fontSize: 16, marginBottom: 20
+        fontSize: 16,
+        marginBottom: 20,
+        textAlign: 'center'
     },
     closeButton: {
-        backgroundColor: '#B71C1C', padding: 10, borderRadius: 5
+        backgroundColor: '#B71C1C',
+        padding: 10,
+        borderRadius: 5
     },
     closeButtonText: {
-        color: '#fff', textAlign: 'center'
+        color: '#fff',
+        textAlign: 'center'
     },
+    itemStatus: {
+        fontWeight: 'bold',
+    }
 });
-
 
 export default App;

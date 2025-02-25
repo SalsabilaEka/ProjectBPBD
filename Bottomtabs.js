@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Text, View } from 'react-native';
+import { Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -43,7 +43,6 @@ export default function App() {
                     tabBarIcon: ({ focused, color }) => {
                         let iconName;
 
-                        // Assign icons based on the route name
                         if (route.name === 'Beranda') {
                             iconName = faHouse;
                         } else if (route.name === 'Peta') {
@@ -54,17 +53,16 @@ export default function App() {
                             iconName = faFolderOpen;
                         }
 
-                        // Return the icon with focused color
                         return (
                             <FontAwesomeIcon
                                 icon={iconName}
                                 size={20}
-                                color={focused ? '#770101' : 'gray'}  // Change color when active or inactive
+                                color={focused ? '#770101' : 'gray'}  
                             />
                         );
                     },
                     tabBarLabel: ({ focused }) => {
-                        let labelColor = focused ? '#770101' : 'gray';  // Red when active
+                        let labelColor = focused ? '#770101' : 'gray';  
                         return (
                             <Text style={{ fontSize: 11, color: labelColor }}>
                                 {route.name}
