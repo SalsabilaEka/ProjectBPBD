@@ -9,7 +9,7 @@ const HomeScreen = () => {
     const [currentLink, setCurrentLink] = useState('');
 
     const links = [
-        { url: 'https://script.google.com/macros/s/AKfycbyWorgMJCYK_sI8zx9XQ09F0nd99xPRsCUfXAXqxkk2lk_lvcRtaRt1uOzVgchlqxZEfw/exec', icon: faVolcano, text: 'Kejadian Bencana' },
+        { url: 'https://script.google.com/macros/s/AKfycbxbE14YofZiO9Eam30sNroreMAy-xt9ojwLDJhCuqFby-X9EqpemZomBd_eoU93gp_pMQ/exec', icon: faVolcano, text: 'Kejadian Bencana' },
         { url: 'https://script.google.com/macros/s/AKfycbwCfjnjD9yUxTJIYPT67kDazNlBVIo54sGFszQnevgYn2cDoyut6cKF5gnU0p_G7We0/exec', icon: faChalkboardUser, text: 'Kegiatan Mitigasi Bencana' },
         { url: 'https://script.google.com/macros/s/AKfycby80mFZjD697uBui7e_vMq3FrbExZB25xVNk3Rxfiun29-n3Z_IFVQSzEG7U_7cz75tSw/exec', icon: faCity, text: 'Persil Bangunan' },
     ];
